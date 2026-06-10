@@ -2,11 +2,11 @@
 
 class CashRegister:
     def __init__(self, discount=0):
-        self.total = 0
+        self.total = 0.0
         self.items = []
         self.previous_transactions = []
 
-        # use setter for validation
+        # validate discount
         self.discount = discount
 
     # ---------- DISCOUNT PROPERTY ----------
@@ -22,52 +22,49 @@ class CashRegister:
             print("Not valid discount")
             self._discount = 0
 
-    # ---------- METHODS ----------
-    def add_item(self, item, price, quantity=1):
+    # ---------- ADD ITEM ----------
+    def add_item(self, title, price, quantity=1):
         item_total = price * quantity
 
         self.total += item_total
 
+        # store item (including multiples)
         self.items.append({
-            "item": item,
+            "title": title,
             "price": price,
             "quantity": quantity
         })
 
-        self.previous_transactions.append({
-            "item": item,
-            "price": price,
-            "quantity": quantity,
-            "total": item_total
-        })
+        # track transaction
+        self.previous_transactions.append(item_total)
 
+    # ---------- APPLY DISCOUNT ----------
     def apply_discount(self):
-        if not self.previous_transactions:
+        if self.total == 0:
             print("There is no discount to apply.")
             return
 
         discount_amount = (self.discount / 100) * self.total
         self.total -= discount_amount
 
-        # remove last transaction
-        last = self.previous_transactions.pop()
+        print(f"Success! New total: {self.total:.2f}")
 
-        # remove last matching item
-        for i in range(len(self.items) - 1, -1, -1):
-            if self.items[i]["item"] == last["item"]:
-                self.items.pop(i)
-                break
-
+    # ---------- VOID LAST TRANSACTION ----------
     def void_last_transaction(self):
         if not self.previous_transactions:
             return
 
-        last = self.previous_transactions.pop()
+        last_amount = self.previous_transactions.pop()
+        self.total -= last_amount
 
-        self.total -= last["total"]
+        # remove last item occurrence
+        if self.items:
+            self.items.pop()
 
-        # remove last matching item
-        for i in range(len(self.items) - 1, -1, -1):
-            if self.items[i]["item"] == last["item"]:
-                self.items.pop(i)
-                break
+        # ensure total doesn't go negative
+        if not self.items:
+            self.total = 0.0
+
+    # ---------- GET ITEMS ----------
+    def get_items(self):
+        return self.items
